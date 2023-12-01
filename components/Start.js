@@ -23,7 +23,13 @@ const Start = ({ navigation }) => {
                     <Text>Chose your color:</Text>
                     <View style={styles.colorLayout}>
                         {colors.map((color, index) => (
-                            <TouchableOpacity key={index} style={[styles.colorChoices, { backgroundColor: color }, background === color && styles.selected]} onPress={() => setBackgroundColor(color)} />
+                            <TouchableOpacity
+                                key={index}
+                                style={[styles.colorChoices,
+                                { backgroundColor: color }, background === color && styles.selected]} onPress={() => setBackgroundColor(color)}
+                                accessible={true}
+
+                            />
                         ))}
                     </View>
                     <Button
