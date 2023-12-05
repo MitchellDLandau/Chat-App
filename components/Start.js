@@ -1,24 +1,41 @@
 import { useState } from 'react';
-import { StyleSheet, View, Text, Button, TextInput, ImageBackground, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, Button, TextInput, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { getAuth, signInAnonymously } from "firebase/auth";
+import MovingTitle from './MovingTitle';
 
 const background = require('../A5-chatapp-assets/Background.png');
 
 const Start = ({ navigation }) => {
     const [name, setName] = useState('');
     const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-    const colors = ['#FDDFDF', '#FCF7DE', 'DEFDE0', '#DEF3FD', '#F0DEFD'];
+    const colors = ['#ffc09f', '#ffee93', '#fcf5c7', '#a0ced9', '#adf7b6'];
+    const auth = getAuth();
+
+    const signInUser = () => {
+        signInAnonymously(auth)
+            .then(result => {
+                navigation.navigate("Chat", { userID: result.user.uid, name: name, color: backgroundColor });
+                Alert.alert("Signed in Successfully!");
+            })
+            .catch((error) => {
+                Alert.alert("Unable to sign in, try again later.");
+            })
+    }
 
     return (
         <View style={styles.container}>
             <ImageBackground source={background} resizeMode="cover" style={styles.image}>
                 <View style={styles.overlay}>
-                    <Text>Hello Start!</Text>
+                    <View>
+                        <MovingTitle style={styles.textTitle} />
+                    </View>
                     <TextInput
                         style={styles.textInput}
                         value={name}
                         onChangeText={setName}
                         placeholder='Type your username here'
                     />
+
                     {/* Here is where the user can select the color they wish to use while using the application */}
                     <Text>Chose your color:</Text>
                     <View style={styles.colorLayout}>
@@ -32,10 +49,15 @@ const Start = ({ navigation }) => {
                             />
                         ))}
                     </View>
-                    <Button
+                    <TouchableOpacity
+                        style={styles.startButton}
+                        onPress={signInUser}>
+                        <Text style={styles.startButtonText}>Get started</Text>
+                    </TouchableOpacity>
+                    {/* <Button
                         title="Go to Chat"
                         onPress={() => navigation.navigate('Chat', { name: name, color: backgroundColor })}
-                    />
+                    /> */}
                 </View>
             </ImageBackground>
         </View>
@@ -66,6 +88,7 @@ const styles = StyleSheet.create({
         marginTop: 15,
         marginBottom: 15,
         color: 'white',
+        borderRadius: 10
     },
     colorLayout: {
         flexDirection: 'row',
@@ -76,20 +99,17 @@ const styles = StyleSheet.create({
         margin: 10,
         borderRadius: 20,
     },
+    startButton: {
+        backgroundColor: "#E3EEEE",
+        height: 50,
+        width: "88%",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 10
+    },
+    startButtonText: {
+        color: "#000",
+    }
 });
 
 export default Start;
-
-
-const changeColor = () => {
-    setColorPickerVisible(true);
-}
-
-const handleColorChange = (color) => {
-    setBackgroundColor(color);
-    setColorPickerVisible(false);
-}
-
-const closeColorPicker = () => {
-    setColorPickerVisible(false);
-}

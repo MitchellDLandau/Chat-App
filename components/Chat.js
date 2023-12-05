@@ -1,16 +1,45 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, KeyboardAvoidingView } from 'react-native';
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import { collection, getDocs, addDoc, onSnapshot, query, where, orderBy } from "firebase/firestore";
 
-const Chat = ({ route, navigation }) => {
+const Chat = ({ route, navigation, db }) => {
     const { name } = route.params;
     const color = route.params.color;
+    const userID = route.params.userID;
     const [messages, setMessages] = useState([]);
 
+    // Sends the message to the db and updates the messages.
     const onSend = (newMessages) => {
-        setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages))
+        addDoc(collection(db, "messages"), newMessages[0]);
     }
 
+    useEffect(() => {
+        // Set page name and color.
+        navigation.setOptions({
+            title: name,
+            backgroundColor: color
+        });
+        // Take db of messages and display by time sent
+        const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+        const unsubChat = onSnapshot(q, (documentsSnapshot) => {
+            let newMessages = [];
+
+            documentsSnapshot.forEach(doc => {
+                newMessages.push({
+                    _id: doc._id, //changed the second one
+                    ...doc.data(),
+                    createdAt: new Date(doc.data().createdAt.toMillis())
+                })
+            })
+            setMessages(newMessages)
+        })
+        return () => {
+            if (unsubChat) unsubChat();
+        }
+    }, []);
+
+    // This code is to set the colors of the chat bubbles.
     const renderBubble = (props) => {
         return <Bubble
             {...props}
@@ -25,34 +54,6 @@ const Chat = ({ route, navigation }) => {
         />
     }
 
-    useEffect(() => {
-        setMessages([
-            {
-                _id: 1,
-                text: "Hello developer",
-                createdAt: new Date(),
-                user: {
-                    _id: 2,
-                    name: "React Native",
-                    avatar: "https://placeimg.com/140/140/any",
-                },
-            },
-            {
-                _id: 2,
-                text: 'This is a system message',
-                createdAt: new Date(),
-                system: true,
-            },
-        ]);
-    }, []);
-
-    useEffect(() => {
-        navigation.setOptions({
-            title: name,
-            backgroundColor: color
-        });
-    }, []);
-
     return (
         <View style={[styles.chatBox, { backgroundColor: color }]}>
             <GiftedChat
@@ -60,7 +61,8 @@ const Chat = ({ route, navigation }) => {
                 renderBubble={renderBubble}
                 onSend={messages => onSend(messages)}
                 user={{
-                    _id: 1
+                    _id: userID,
+                    name: name
                 }}
             />
             {Platform.OS === 'android' ? <KeyboardAvoidingView behavior='height' /> : null}
