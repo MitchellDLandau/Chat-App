@@ -27,7 +27,7 @@ const Chat = ({ route, navigation, db }) => {
 
             documentsSnapshot.forEach(doc => {
                 newMessages.push({
-                    _id: doc._id, //changed the second one
+                    _id: doc.id, //changed the second one
                     ...doc.data(),
                     createdAt: new Date(doc.data().createdAt.toMillis())
                 })
