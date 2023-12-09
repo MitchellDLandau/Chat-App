@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, KeyboardAvoidingView } from 'react-native';
-import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import { StyleSheet, View, Text, KeyboardAvoidingView, Alert } from 'react-native';
+import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
 import { collection, getDocs, addDoc, onSnapshot, query, where, orderBy } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Chat = ({ route, navigation, db }) => {
+const Chat = ({ route, navigation, db, isConnected }) => {
     const { name } = route.params;
     const color = route.params.color;
     const userID = route.params.userID;
@@ -14,30 +15,57 @@ const Chat = ({ route, navigation, db }) => {
         addDoc(collection(db, "messages"), newMessages[0]);
     }
 
+    const cacheMessages = async (messagesToCache) => {
+        try {
+            await AsyncStorage.setItem('messages', JSON.stringify(messagesToCache));
+        } catch (error) {
+            console.log(error.message);
+        }
+    }
+
+    const loadCachedMessages = async () => {
+        const cachedMessages = await AsyncStorage.getItem("messages") || [];
+        setMessages(JSON.parse(cachedMessages));
+    }
+
+    let unsubChat;
+
     useEffect(() => {
         // Set page name and color.
         navigation.setOptions({
             title: name,
             backgroundColor: color
         });
-        // Take db of messages and display by time sent
-        const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
-        const unsubChat = onSnapshot(q, (documentsSnapshot) => {
-            let newMessages = [];
-
-            documentsSnapshot.forEach(doc => {
-                newMessages.push({
-                    _id: doc.id, //changed the second one
-                    ...doc.data(),
-                    createdAt: new Date(doc.data().createdAt.toMillis())
+        // Displays chat when user is online
+        if (isConnected === true) {
+            if (unsubChat) unsubChat();
+            unsubChat = null;
+            // Take db of messages and display by time sent
+            const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+            unsubChat = onSnapshot(q, (documentsSnapshot) => {
+                let newMessages = [];
+                documentsSnapshot.forEach(doc => {
+                    newMessages.push({
+                        _id: doc.id,
+                        ...doc.data(),
+                        createdAt: new Date(doc.data().createdAt.toMillis())
+                    })
                 })
+                cacheMessages(newMessages);
+                setMessages(newMessages);
             })
-            setMessages(newMessages)
-        })
+            //When user is offline cached messages are still displayed
+        } else loadCachedMessages();
+
         return () => {
             if (unsubChat) unsubChat();
         }
-    }, []);
+    }, [isConnected]);
+
+    const renderInputToolbar = (props) => {
+        if (isConnected) return <InputToolbar {...props} />;
+        else return null;
+    }
 
     // This code is to set the colors of the chat bubbles.
     const renderBubble = (props) => {
@@ -59,6 +87,7 @@ const Chat = ({ route, navigation, db }) => {
             <GiftedChat
                 messages={messages}
                 renderBubble={renderBubble}
+                renderInputToolbar={renderInputToolbar}
                 onSend={messages => onSend(messages)}
                 user={{
                     _id: userID,
