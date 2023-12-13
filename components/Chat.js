@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, KeyboardAvoidingView, Alert } from 'react-native';
+import { StyleSheet, View, KeyboardAvoidingView } from 'react-native';
+import MapView from 'react-native-maps';
 import { GiftedChat, Bubble, InputToolbar } from "react-native-gifted-chat";
-import { collection, getDocs, addDoc, onSnapshot, query, where, orderBy } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, where, orderBy } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import CustomActions from './CustomActions';
 
-const Chat = ({ route, navigation, db, isConnected }) => {
+const Chat = ({ route, navigation, db, isConnected, storage }) => {
     const { name } = route.params;
     const color = route.params.color;
     const userID = route.params.userID;
@@ -15,6 +17,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         addDoc(collection(db, "messages"), newMessages[0]);
     }
 
+    // Caches the messages so they can be retrieved if the connection is lost.
     const cacheMessages = async (messagesToCache) => {
         try {
             await AsyncStorage.setItem('messages', JSON.stringify(messagesToCache));
@@ -23,6 +26,7 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         }
     }
 
+    //Loads the cached messages when called. 
     const loadCachedMessages = async () => {
         const cachedMessages = await AsyncStorage.getItem("messages") || [];
         setMessages(JSON.parse(cachedMessages));
@@ -62,9 +66,40 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         }
     }, [isConnected]);
 
+    // Renders the toolbar so that users can pick to send images, take images, and send location data. 
     const renderInputToolbar = (props) => {
         if (isConnected) return <InputToolbar {...props} />;
         else return null;
+    }
+
+    // Renders the custom actions of images and location for the user.
+    const renderCustomActions = (props) => {
+        return <CustomActions storage={storage} userID={userID} {...props} />;
+    };
+
+    //Sends a message bubble containing the location data the user wishes to send. 
+
+    const renderCustomView = (props) => {
+        const { currentMessage } = props;
+        if (currentMessage.location) {
+            return (
+                <MapView
+                    style={{
+                        width: 150,
+                        height: 100,
+                        borderRadius: 13,
+                        margin: 3
+                    }}
+                    region={{
+                        latitude: currentMessage.location.latitude,
+                        longitude: currentMessage.location.longitude,
+                        latitudeDelta: 0.0922,
+                        longitudeDelta: 0.0421,
+                    }}
+                />
+            );
+        }
+        return null;
     }
 
     // This code is to set the colors of the chat bubbles.
@@ -82,12 +117,16 @@ const Chat = ({ route, navigation, db, isConnected }) => {
         />
     }
 
+    //Using GiftedChat renders message bubbles as well as other components for sending more information.
+
     return (
         <View style={[styles.chatBox, { backgroundColor: color }]}>
             <GiftedChat
                 messages={messages}
                 renderBubble={renderBubble}
+                renderActions={renderCustomActions}
                 renderInputToolbar={renderInputToolbar}
+                renderCustomView={renderCustomView}
                 onSend={messages => onSend(messages)}
                 user={{
                     _id: userID,
@@ -96,7 +135,6 @@ const Chat = ({ route, navigation, db, isConnected }) => {
             />
             {Platform.OS === 'android' ? <KeyboardAvoidingView behavior='height' /> : null}
             {/* {Platform.OS === 'ios' ? <KeyboardAvoidingView behavior='padding' /> : null} */}
-            {/* Above was intended to fix spacing of keyboard on ios however it seems not needed */}
         </View>
     );
 }

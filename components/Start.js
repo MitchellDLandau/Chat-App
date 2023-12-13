@@ -11,6 +11,8 @@ const Start = ({ navigation }) => {
     const colors = ['#ffc09f', '#ffee93', '#fcf5c7', '#a0ced9', '#adf7b6'];
     const auth = getAuth();
 
+    // Signing in the user to the chat room using firebase/auth
+
     const signInUser = () => {
         signInAnonymously(auth)
             .then(result => {
@@ -21,6 +23,8 @@ const Start = ({ navigation }) => {
                 Alert.alert("Unable to sign in, try again later.");
             })
     }
+
+    // Alows the user to choose a color and input their name for using the application. Passes the name and color choice as props to components. 
 
     return (
         <View style={styles.container}>
@@ -41,23 +45,23 @@ const Start = ({ navigation }) => {
                     <View style={styles.colorLayout}>
                         {colors.map((color, index) => (
                             <TouchableOpacity
+                                accessible={true}
+                                accessibilityLabel="choose your color"
+                                accessibilityHint="Let’s you choose from five different colors for your screen color."
                                 key={index}
                                 style={[styles.colorChoices,
                                 { backgroundColor: color }, background === color && styles.selected]} onPress={() => setBackgroundColor(color)}
-                                accessible={true}
-
                             />
                         ))}
                     </View>
                     <TouchableOpacity
+                        accessible={true}
+                        accessibilityLabel="Start chatting"
+                        accessibilityHint="lets you enter the chat room to see others messages and send your own."
                         style={styles.startButton}
                         onPress={signInUser}>
                         <Text style={styles.startButtonText}>Get started</Text>
                     </TouchableOpacity>
-                    {/* <Button
-                        title="Go to Chat"
-                        onPress={() => navigation.navigate('Chat', { name: name, color: backgroundColor })}
-                    /> */}
                 </View>
             </ImageBackground>
         </View>
