@@ -28,9 +28,15 @@ The application was made to be able to do the following:
 Setting up your own environment:
 * Clone the repository.
 * Run npm install to get the necesary dependencies.
+```
     $ npm install
+```
 * Install expo globaly npm install -g expo-cli
+``
     $ npm install -g expo-cli
+``
 * Generate and use your own Firebase configuration code which can be done at firebase.google.com
 * Run expo start
+``
     $ expo start
+``
