@@ -18,7 +18,7 @@ LogBox.ignoreLogs([
 const Stack = createNativeStackNavigator();
 
 const App = () => {
-  // implimentation of code to be able to read messages when connection is lost
+  // implimentation of code to be able to read messages when connection is lost.
   const connectionStatus = useNetInfo();
 
   useEffect(() => {
@@ -30,7 +30,7 @@ const App = () => {
     }
   }, [connectionStatus.isConnected]);
 
-  // Initiating firebase storage configuration
+  // Initiating firebase storage configuration.
   const firebaseConfig = {
     apiKey: "AIzaSyBZkGFQU7RDkwfWeK7LS2yBEg6c7aThd1M",
     authDomain: "chatapp-da5ef.firebaseapp.com",
@@ -44,8 +44,7 @@ const App = () => {
   const db = getFirestore(app);
   const storage = getStorage(app);
 
-  // Navigation control for the application and prop passing to components
-
+  // Navigation control for the application and prop passing to components.
   return (
     <NavigationContainer>
       <Stack.Navigator

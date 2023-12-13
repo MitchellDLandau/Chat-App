@@ -40,11 +40,11 @@ const Chat = ({ route, navigation, db, isConnected, storage }) => {
             title: name,
             backgroundColor: color
         });
-        // Displays chat when user is online
+        // Displays chat when user is online.
         if (isConnected === true) {
             if (unsubChat) unsubChat();
             unsubChat = null;
-            // Take db of messages and display by time sent
+            // Take db of messages and display by time sent.
             const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
             unsubChat = onSnapshot(q, (documentsSnapshot) => {
                 let newMessages = [];
@@ -58,7 +58,7 @@ const Chat = ({ route, navigation, db, isConnected, storage }) => {
                 cacheMessages(newMessages);
                 setMessages(newMessages);
             })
-            //When user is offline cached messages are still displayed
+            //When user is offline cached messages are still displayed.
         } else loadCachedMessages();
 
         return () => {

@@ -11,7 +11,7 @@ const Start = ({ navigation }) => {
     const colors = ['#ffc09f', '#ffee93', '#fcf5c7', '#a0ced9', '#adf7b6'];
     const auth = getAuth();
 
-    // Signing in the user to the chat room using firebase/auth
+    // Signing in the user to the chat room using firebase/auth.
 
     const signInUser = () => {
         signInAnonymously(auth)
@@ -39,7 +39,6 @@ const Start = ({ navigation }) => {
                         onChangeText={setName}
                         placeholder='Type your username here'
                     />
-
                     {/* Here is where the user can select the color they wish to use while using the application */}
                     <Text>Chose your color:</Text>
                     <View style={styles.colorLayout}>

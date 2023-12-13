@@ -31,12 +31,12 @@ Setting up your own environment:
 ```
     $ npm install
 ```
-* Install expo globaly npm install -g expo-cli
+* Install expo globaly npm install -g expo-cli.
 ```
     $ npm install -g expo-cli
 ```
-* Generate and use your own Firebase configuration code which can be done at firebase.google.com
-* Run expo start
+* Generate and use your own Firebase configuration code which can be done at firebase.google.com and add it to app.js under //Initiating firebase storage configuration.
+* Run expo start.
 ```
     $ expo start
 ```
